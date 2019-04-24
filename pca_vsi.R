@@ -2,22 +2,22 @@ library(readr)
 library(dplyr)
 library(caret)
 library(randomForest)
+library(purrr)
 
 set.seed(42)
 
-d <- read_csv("eu_conference/nina_data_vsi.txt")
+datapath <- "eu_conference/nina_data_vsi"
 
-datapath <- "eu_conference/data_vsi"
+d <- read_csv(paste0(datapath,".txt"))
 
-pcs <- d %>% select(-seq(15)) %>% prcomp(center = TRUE, scale. = TRUE)
-saveRDS(pcs, paste0(datapath,"_pcs.rds"))
-# 
-pct <- 1
+ pcs <- d %>% select(-seq(15)) %>% prcomp(center = TRUE, scale. = TRUE)
+# # 
+ pct <- 1
 #
 
 #otherwise fix the number of components
 components <- min(which(summary(pcs)$importance[3, ] >= pct))
-# 
+#
 # # the first 11 components explain the entire variance of the data
 transformed.data <- d %>% select(2:15) %>% bind_cols(as_tibble(pcs$x) %>%
    select(1:components))
@@ -26,13 +26,13 @@ targets <- colnames(d)[2:15]
  
 features <- paste0("PC", seq(components), collapse = "+")
 
-# 
+#
 model <- targets %>% map(~ randomForest(as.formula(paste0(.x, "~", features)),
   data = transformed.data,
   ntree = 100, importance = T
 ))
 
-save(model, file = paste0(datapath,"_pcamodel.RData"))
+save(model, pcs, file = paste0(datapath,"_pcamodel.RData"))
 
 folds <- createFolds(seq(nrow(d)), k = 10)
 
@@ -77,7 +77,7 @@ rfeval <- folds %>% map(function(fold) {
     map(~ predict(.x, test_data))
   
   write_csv(cbind(d[fold, 2:15], predictions), path = paste0(datapath,"_predictions.csv"), append = TRUE, col_names = FALSE)
-  predictions %>% imap_dbl(~ sqrt(sum((.x - d[fold, .y])^2) / length(fold)))
+  predictions %>% imap_dbl(~ sqrt(sum((.x - d[fold, .y+1])^2) / length(fold)))
 })
 
 rfstats <- rfeval %>% map_dfr(~.x)
