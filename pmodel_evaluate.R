@@ -4,7 +4,7 @@ library(randomForest)
 library(purrr)
 
 evaluate <- function(query,model,pca = FALSE) {
-  colnames(query) <- c(paste0("sig",seq(lengrth(query)-14)), paste0("spk",seq(14)))
+  colnames(query) <- c(paste0("sig",seq(length(query)-14)), paste0("spk",seq(14)))
   
   if(pca){
     query <- as_tibble(scale(query,center = pcs$center, scale = pcs$scale) %*% pcs$rotation) %>%
