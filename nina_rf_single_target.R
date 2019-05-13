@@ -3,6 +3,7 @@ library(caret)
 library(randomForest)
 library(purrr)
 library(corrplot)
+library(dplyr)
 
 set.seed(42)
 
@@ -12,6 +13,28 @@ d <- read_csv(paste0(datapath, ".txt"), col_types = cols())[, -1]
 folds <- createFolds(seq(nrow(d)), k = 10)
 targets <- colnames(d)[1:14]
 features <- paste(colnames(d)[15:ncol(d)], collapse = "+")
+
+outls <- targets %>% map(function(target){
+  pulled <- d %>% pull(target) %>% hist(breaks = "FD", plot = FALSE)
+  bottom <- pulled$breaks[which.max(pulled$counts)]
+  top <- pulled$breaks[which.max(pulled$counts) + 1]
+  which(d %>% pull(target) <= top & d %>% pull(target) > bottom)
+})
+
+
+cts <- table(unlist(outls))
+to.remove <- as.numeric(names(which(cts > 10)))
+
+#par(mfrow = c(3,5))
+#targets %>% walk(function(target){
+#  pulled <- d %>% slice(-to.remove) %>% pull(target) %>%  hist(breaks = "FD", plot = FALSE)
+#  plot(pulled, main = "")
+#})
+
+#filter out most frequent parameter values
+d <- d %>% slice(-to.remove)
+
+
 
 # pdf(file = paste0(datapath, "_dist.pdf"), width = 10.5, height = 8.5)
 # par(mfrow = c(3, 5))
