@@ -23,15 +23,13 @@ evaluate <- function(query, model, pca = FALSE) {
   predictions
 }
 
-load("journal/nina_data_vsi.RData")
+load("journal/nina_data_pca.RData")
 
 # transpose galore
 result <- read_csv("test_nina_pca.txt", col_types = cols(), col_names = FALSE) %>%
   apply(1, function(q) evaluate(as.data.frame(t(q)), model))
 
-i <- 1
-result %>% sapply(function(r) {
+result %>% iwalk(function(r,id) {
   names(r) <- c("F", "Bd1", "depi", "mel", "oxy", "der", "Bd", "A", "Be", "oxy2", "amp", "pot", "amp1", "pot1")
-  write.csv(t(r %>% map_dfr(~ .x$individual)), paste0("output_data_", i, ".csv"))
-  i <<- i + 1
+  write.csv(t(r %>% map_dfr(~ .x$individual)), paste0("output_data_", id, ".csv"))
 })

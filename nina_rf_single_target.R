@@ -67,7 +67,7 @@ train_model <- function(datapath){
       mtries <- data.frame(mtry = c(1, floor(c(0.1,0.25,0.5,1)*flength), floor(sqrt(flength))))
       train(as.formula(paste0(target, "~", features)), d, method = "rf",
             ntree = 100, metric = "RMSE", tuneGrid = mtries, 
-            trControl = trainControl(method = "cv", number = 10, savePredictions = "final", preProcOptions = list(thresh = 1)),
+            trControl = trainControl(method = "cv", number = 10, savePredictions = "final", preProcOptions = list(pcaComp = 11)),
             preProcess="pca")
     })
   }
