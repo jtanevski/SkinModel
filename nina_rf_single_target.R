@@ -5,6 +5,7 @@ library(purrr)
 library(furrr)
 library(corrplot)
 library(dplyr)
+library(ggplot2)
 
 set.seed(42)
 plan(multiprocess, workers = 14)
@@ -39,15 +40,20 @@ train_model <- function(datapath) {
   to.remove <- as.numeric(names(which(cts > 10)))
 
   # plot distributions and correlation
-  pdf(file = paste0(datapath, "_dist.pdf"), width = 10.5, height = 8.5)
-  par(mfrow = c(3, 5))
   targets %>% walk(function(target) {
     pulled <- d %>%
       slice(-to.remove) %>%
-      pull(target) %>%
-      hist(breaks = "FD", plot = FALSE)
-    plot(pulled, main = target)
+      pull(target)
+    
+    histg <- ggplot(data.frame(pulled), aes(x = pulled)) + 
+      geom_histogram(binwidth = 2*IQR(pulled)/length(pulled)^(1/3), color="black", fill="white") + 
+      xlab(target) + ylab("Count") +
+      xlim(c(0,tail(pretty(pulled),1))) +
+      theme_classic(base_size = 18)
+    
+    ggsave(file = paste0(datapath, "_dist_", target, ".pdf"), plot=histg, width = 8, height = 6)
   })
+  pdf(file = paste0(datapath, "_corrplot.pdf"), width = 8, height = 6, pointsize = 18)
   corrplot(cor(d %>% slice(-to.remove) %>% select(targets)), type = "upper", diag = F)
   dev.off()
 
@@ -139,13 +145,16 @@ prediction_scatter_plots <- function(model, folder) {
     cbind(model %>% map_dfc(~ tibble(!!.x$terms[[2]] := .x$pred$pred)))
 
   seq(14) %>% walk(function(.x) {
-    pdf(file = paste0(folder, colnames(p)[.x], ".pdf"), width = 8, height = 5)
-    smoothScatter(t(p[, .x]), t(p[, .x + 14]),
+    pdf(file = paste0(folder, colnames(p)[.x], ".pdf"), width = 8, height = 5, pointsize = 18)
+    tval <- t(p[, .x])
+    pval <- t(p[, .x + 14])
+    smoothScatter(tval, pval,
       xlab = "True value", ylab = "Predicted value",
+      xlim = c(0, tail(pretty(tval),1)), ylim = c(0, tail(pretty(pval),1)),
       main = colnames(p)[.x], pch = ".", nrpoints = 0,
       colramp = colorRampPalette(c("white", "lightyellow", "darkseagreen1", "royalblue"))
     )
-    points(t(p[, .x]), t(p[, .x + 14]), pch = ".")
+    points(tval, pval, pch = ".")
     dev.off()
   })
 }
