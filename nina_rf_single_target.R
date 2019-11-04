@@ -8,14 +8,14 @@ library(dplyr)
 library(ggplot2)
 
 set.seed(42)
-plan(multiprocess, workers = 14)
+plan(multiprocess, workers = 5)
 
 ## Example
-datapath <- commandArgs(TRUE)[1]
-train_model(datapath)
-
-load(paste0(datapath, ".RData"))
-model_stats(model)
+# datapath <- commandArgs(TRUE)[1]
+# train_model(datapath)
+# 
+# load(paste0(datapath, ".RData"))
+# model_stats(model)
 
 
 train_model <- function(datapath) {
@@ -145,7 +145,7 @@ prediction_scatter_plots <- function(model, folder) {
     cbind(model %>% map_dfc(~ tibble(!!.x$terms[[2]] := .x$pred$pred)))
 
   seq(14) %>% walk(function(.x) {
-    pdf(file = paste0(folder, colnames(p)[.x], ".pdf"), width = 8, height = 5, pointsize = 18)
+    pdf(file = paste0(folder, colnames(p)[.x], ".pdf"), width = 5, height = 5.5, pointsize = 18)
     tval <- t(p[, .x])
     pval <- t(p[, .x + 14])
     smoothScatter(tval, pval,
@@ -157,4 +157,9 @@ prediction_scatter_plots <- function(model, folder) {
     points(tval, pval, pch = ".")
     dev.off()
   })
+}
+
+optimal_number_features <- function(model){
+  print(table(model %>% map_dbl(~.x$bestTune[1,1])))
+  print(table(model %>% map_dbl(~.x$bestTune[1,1]/length(.x$coefnames))))
 }
