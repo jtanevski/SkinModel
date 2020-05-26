@@ -8,4 +8,4 @@ Verdel, N., Tanevski, J., Džeroski, S., & Majaron, B. (2019). [A machine-learni
 
 Verdel, N., Tanevski, J., Džeroski, S., & Majaron, B. (2019). [Hybrid technique for characterization of human skin using a combined machine learning and inverse Monte Carlo approach](https://doi.org/10.1117/12.2526997). In Novel Biophotonics Techniques and Applications V (Vol. 11075, p. 110751K). International Society for Optics and Photonics.
 
-Verdel, N., Tanevski, J., Džeroski, S., & Majaron, B. (2020). Predictive model for quantitative analysis of human skin using photothermal radiometry and diffuse reflectance spectroscopy. In revision.
+Verdel, N., Tanevski, J., Džeroski, S., & Majaron, B. (2020). [Predictive model for quantitative analysis of human skin using photothermal radiometry and diffuse reflectance spectroscopy](https://doi.org/10.1364/BOE.384982). Biomedical Optics Express 11(3), 1679-1696.
